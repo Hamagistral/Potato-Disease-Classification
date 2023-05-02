@@ -3,7 +3,6 @@ import { makeStyles, withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import Avatar from "@material-ui/core/Avatar";
 import Container from "@material-ui/core/Container";
 import React from "react";
 import Card from "@material-ui/core/Card";
@@ -12,9 +11,6 @@ import { Paper, CardActionArea, CardMedia, Grid, TableContainer, Table, TableBod
 import { DropzoneArea } from 'material-ui-dropzone';
 import { common } from '@material-ui/core/colors';
 import Clear from '@material-ui/icons/Clear';
-import axios from "axios";
-
-import logo from "./logo.png";
 
 const ColorButton = withStyles((theme) => ({
   root: {
@@ -128,8 +124,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   appbar: {
-    padding: '0% 10%',
-    background: '#000',
+    background: '#337615',
     boxShadow: 'none',
     color: 'white'
   },
@@ -148,18 +143,19 @@ export const ImageUpload = () => {
   const [isLoading, setIsloading] = useState(false);
   let confidence = 0;
 
+  const ENDPOINT = "https://us-east1-inbound-stage-385420.cloudfunctions.net/predict";
+
   const sendFile = async () => {
     if (image) {
       let formData = new FormData();
       formData.append("file", selectedFile);
-      let res = await axios({
-        method: "post",
-        url: process.env.REACT_APP_API_URL,
-        data: formData,
-      });
-      if (res.status === 200) {
-        setData(res.data);
-      }
+
+      await fetch(ENDPOINT, {
+        method: "POST",
+        body: formData
+      }).then(r => r.json())
+      .then(data => setData(data))
+
       setIsloading(false);
     }
   }
@@ -208,11 +204,9 @@ export const ImageUpload = () => {
     <React.Fragment>
       <AppBar position="static" className={classes.appbar}>
         <Toolbar>
-          <Typography className={classes.title} variant="h6" noWrap>
-            Potato Disease Classification
+          <Typography variant="h6" noWrap>
+          🥔 Potato Disease Classification
           </Typography>
-          <div className={classes.grow} />
-          <Avatar src={logo}></Avatar>
         </Toolbar>
       </AppBar>
       <Container maxWidth={false} className={classes.mainContainer} disableGutters={true}>
@@ -272,7 +266,6 @@ export const ImageUpload = () => {
           </Grid>
           {data &&
             <Grid item className={classes.buttonGrid} >
-
               <ColorButton variant="contained" className={classes.clearButton} color="primary" component="span" size="large" onClick={clearData} startIcon={<Clear fontSize="large" />}>
                 Clear
               </ColorButton>
